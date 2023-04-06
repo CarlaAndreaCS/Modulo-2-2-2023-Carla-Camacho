@@ -9,7 +9,7 @@ class Dinosaur(Sprite): #La clase dinosaurio hereda la clase Sprite de Pygame
     y_pos_DUCKING = 345 #Posicion del dinosaurio cuando se agacha, mas abajo 
     JUMP_VEL = 9 #Velocidad del dinosaurio desde que deja el camino 
 
-    def __init__(self):
+    def __init__(self, name):
         
         self.run_img = RUNNINGANIMADO
         self.duck_img = DUCKINGANIMADO
@@ -21,6 +21,7 @@ class Dinosaur(Sprite): #La clase dinosaurio hereda la clase Sprite de Pygame
         self.dino_rect.y = self.y_pos
         self.step = 0  #Realiza iteraciones, empieza en 0, cuando empieza el juego #Se usa para realizar el intercambio de imagenes
         self.jump_vel = self.JUMP_VEL
+        self.name = name
 
         
         self.dino_running = True   #Estados del dinosaurio iniciales

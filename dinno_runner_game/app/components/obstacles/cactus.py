@@ -1,5 +1,5 @@
 import random
-from app.components.obstacles.obstacles import Obstacle
+from app.components.obstacles.obstacle import Obstacle
 
 
 

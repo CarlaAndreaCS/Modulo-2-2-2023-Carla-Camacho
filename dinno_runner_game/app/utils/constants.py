@@ -99,3 +99,8 @@ HEART = pygame.image.load(os.path.join(IMG_DIR, 'Other/SmallHeart.png'))
 DEFAULT_TYPE = "default"
 
 BG2 = pygame.image.load(os.path.join(IMG_DIR, 'Other/Track2.png'))
+
+BGMENU1 = pygame.image.load(os.path.join(IMG_DIR, 'Other/bgmenu1.png'))
+BGMENU2 = pygame.image.load(os.path.join(IMG_DIR, 'Other/bgmenu2.png'))
+BGMENU3 = pygame.image.load(os.path.join(IMG_DIR, 'Other/bgmenu3.png'))
+BGMENU4 = pygame.image.load(os.path.join(IMG_DIR, 'Other/bgmenu4.png'))

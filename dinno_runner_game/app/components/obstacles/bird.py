@@ -1,10 +1,10 @@
 import random
-from app.components.obstacles.obstacles import Obstacle
+from app.components.obstacles.obstacle import Obstacle
 from app.utils.constants import BIRD
 
 
 class Bird(Obstacle):
-    BIRD_HEIGHTS = [250, 300, 160]
+    BIRD_HEIGHTS = [280, 250, 270, 100, 50]
 
     def __init__(self, image_list):
         self.obstacle_type = 0

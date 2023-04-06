@@ -1,6 +1,6 @@
 import pygame
 import random
-from app.utils.constants import ICON2, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, BG2, SOL, SMALL_CACTUS, LARGE_CACTUS, BIRD
+from app.utils.constants import ICON2, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, BG2, SOL, SMALL_CACTUS, LARGE_CACTUS, BIRD, BGMENU4
 from app.components.obstacles.cactus import SmallCactus, LargeCactus
 from app.components.obstacles.bird import Bird
 from app.components.cloud import Cloud
@@ -17,7 +17,7 @@ class Game:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.playing = False
-        self.game_speed = 20
+        self.game_speed = 10
         self.x_pos_bg = 0
         self.y_pos_bg = 380
         
@@ -25,12 +25,26 @@ class Game:
         self.cloud_2 = Cloud_2() 
         self.mountain = Mountain()
 
-        self.Dinosaurio = Dinosaur()
+        self.Dinosaurio = Dinosaur("Pedro")
 
         self.obstacles = [] #AÑADIDO
 
-        self.obstacles_not_done_number = 0
-        self.obstacles_done_number = 0
+        self.game_running = True
+
+        self.cactus_not_done_number = 0
+        self.cactus_done_number = 0
+        self.colliderected_count_cactus = 0
+        self.not_colliderected_count_cactus = 0
+        self.total_cactus = 0
+
+        self.birds_not_done_number = 0
+        self.birds_done_number = 0
+        self.colliderected_count_birds = 0
+        self.not_colliderected_count_birds = 0
+        self.total_birds = 0
+
+
+        self.points = 0
 
         
         self.text_screen = TextScreen() #AÑADIDO
@@ -46,20 +60,15 @@ class Game:
             self.events()
             self.update(self.game_speed)
             self.draw()
+            if self.points <= - 100:
+                self.playing = False
+                break  
         pygame.quit()
 
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.playing = False
-
-        if len(self.obstacles) == 0:   #AÑADIDO
-           if random.randint(0, 2) == 0:
-               self.obstacles.append(SmallCactus(SMALL_CACTUS))
-           elif random.randint(0, 2) == 1:
-               self.obstacles.append(LargeCactus(LARGE_CACTUS))
-           elif random.randint(0, 2) == 2:
-               self.obstacles.append(Bird(BIRD))
         
 
     def update(self, game_speed):
@@ -70,19 +79,102 @@ class Game:
         user_input = pygame.key.get_pressed()
         self.Dinosaurio.update(user_input) 
         
+        
+        if len(self.obstacles) == 0:
+           if random.randint(0, 2) == 0:
+               self.obstacles.append(SmallCactus(SMALL_CACTUS))
+               self.total_cactus += 1
+
+               if self.colliderected_count_cactus > 0:
+                   self.colliderected_count_cactus = 0
+                   self.cactus_not_done_number += 1
+                   self.points = self.points - 50 
+
+               if self.not_colliderected_count_cactus> 0:
+                   self.not_colliderected_count_cactus = 0
+                   self.cactus_done_number += 1
+                   self.points = self.points + 100
+               
+           elif random.randint(0, 2) == 1:
+               self.obstacles.append(LargeCactus(LARGE_CACTUS))
+               self.total_cactus += 1
+
+               if self.colliderected_count_cactus > 0:
+                   self.colliderected_count_cactus = 0
+                   self.cactus_not_done_number += 1
+                   self.points = self.points - 50
+
+               if self.not_colliderected_count_cactus > 0:
+                   self.not_colliderected_count_cactus = 0
+                   self.cactus_done_number += 1
+                   self.points = self.points + 100
+
+           elif random.randint(0, 2) == 2:
+               self.obstacles.append(Bird(BIRD))
+               self.total_birds += 1
+
+               if self.colliderected_count_birds > 0:
+                   self.colliderected_count_birds = 0
+                   self.birds_not_done_number += 1
+                   self.points = self.points - 25  
+                   
+                
+               if self.not_colliderected_count_birds > 0:
+                   self.not_colliderected_count_birds = 0
+                   self.birds_done_number += 1
+                   self.points = self.points + 75   
+
+
+        user_input = pygame.key.get_pressed()
+        
         for obstacle in self.obstacles: #AÑADIDO
-            obstacle.update(game_speed, self.obstacles) 
-            #if self.Dinosaurio.dino_rect.colliderect(obstacle.rect): #Cuando colisiona
-                #pygame.time.delay(100) #El juego se pausa
-                #self.cactus_done_number = self.cactus_done_number + 1
+            obstacle.update(game_speed, self.obstacles)
+            if  pygame.Rect.colliderect(self.Dinosaurio.dino_rect, obstacle.rect) and type(obstacle) is LargeCactus: #Cuando colisiona
+                self.colliderected_count_cactus += 1
+                
 
+            elif  pygame.Rect.colliderect(self.Dinosaurio.dino_rect, obstacle.rect) and type(obstacle) is SmallCactus: #Cuando colisiona
+                self.colliderected_count_cactus += 1
+                 
 
+            elif user_input[pygame.K_UP] and self.Dinosaurio.dino_rect.colliderect(obstacle.rect) == False:
+                   self.not_colliderected_count_cactus += 1
+                   
+
+        for obstacle in self.obstacles:
+            obstacle.update(game_speed, self.obstacles)
+            if pygame.Rect.colliderect(self.Dinosaurio.dino_rect, obstacle.rect) and type(obstacle) is Bird:
+                     self.colliderected_count_birds += 1
+
+            elif user_input[pygame.K_DOWN] and self.Dinosaurio.dino_rect.colliderect(obstacle.rect) == False:
+                  self.not_colliderected_count_birds += 1
+                 
+
+    def show_text(self):
+        
+        text, text_rect = self.text_screen.name(self)
+        self.screen.blit(text, text_rect)
+        
+        text, text_rect = self.text_screen.cactus_done(self.cactus_done_number) 
+        self.screen.blit(text, text_rect) 
+        
+        text, text_rect = self.text_screen.cactus_not_done(self.cactus_not_done_number) 
+        self.screen.blit(text, text_rect)
+
+        text, text_rect = self.text_screen.birds_not_done(self.birds_not_done_number) 
+        self.screen.blit(text, text_rect)
+
+        text, text_rect = self.text_screen.birds_done(self.birds_done_number) 
+        self.screen.blit(text, text_rect)
+
+        text, text_rect = self.text_screen.score(self.points)
+        self.screen.blit(text, text_rect)
 
        
 
     def draw(self):
         self.clock.tick(FPS)
-        self.screen.fill((135, 206,235)) #CAMBIO COLOR SKY BLUE #135, 206, 235
+        self.screen.fill((135, 206,235)) 
         self.draw_background()
         self.cloud.draw(self.screen) 
         self.cloud_2.draw(self.screen) 
@@ -109,26 +201,29 @@ class Game:
 
         self.screen.blit(SOL, (SCREEN_WIDTH -100, SCREEN_HEIGHT//2 -300))
         
-    def show_text(self):
-        
-        #Nombre
-        text, text_rect = self.text_screen.name() 
-        self.screen.blit(text, text_rect) 
-        
-        #No colision con obstaculos
 
-        for obstacles in self.obstacles: #AÑADIDO
-         user_input = pygame.key.get_pressed()
-         if user_input[pygame.K_DOWN] and self.Dinosaurio.dino_rect.colliderect(obstacles.rect) == False or user_input[pygame.K_UP] and self.Dinosaurio.dino_rect.colliderect(obstacles.rect) == False:
-                self.obstacles_done_number = self.obstacles_done_number + 1
-        text, text_rect = self.text_screen.obstacles_done(self.obstacles_done_number) 
-        self.screen.blit(text, text_rect) 
-
-        #colision con obstaculos
+    def show_menu(self):
         
-        for obstacles in self.obstacles: #AÑADIDO
-         if self.Dinosaurio.dino_rect.colliderect(obstacles.rect): #Cuando colisiona
-                self.obstacles_not_done_number = self.obstacles_not_done_number + 1
+        self.game_running = True
+        self.screen.blit(BGMENU4, (0,0))
+        self.print_menu_elements()
+        pygame.display.update()
 
-        text, text_rect = self.text_screen.obstacles_not_done(self.obstacles_not_done_number) 
+    def print_menu_elements(self):
+        text, text_rect = self.text_screen.menu_message("¿DO YOU WANT TO WAKE UP THE DINO?" )
         self.screen.blit(text, text_rect)
+
+        text, text_rect = self.text_screen.menu_message_two("PRESS ANY KEY" )
+        self.screen.blit(text, text_rect)
+        self.handle_key_events()
+
+    def handle_key_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.game_running = False
+                self.playing = False
+                pygame.display.quit()
+                pygame.quit()
+            if event.type == pygame.KEYDOWN: #Detecta si alguna tecla ha sido presionada
+                self.run()
+
